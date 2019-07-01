@@ -1,0 +1,4 @@
+include "cj.netos.workbench.program"
+include "cj.netos.workbench.main"
+include "cj.netos.workbench.plugin.wbcore"
+include "cj.netos.workbench.stub"
