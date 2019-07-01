@@ -27,6 +27,9 @@ public class ThemeBS implements IThemeBS {
 
 	@Override
 	public void addTheme(String themeid, String name, String creator, String desc) {
+		if(StringUtil.isEmpty(themeid)) {
+			throw new EcmException("未指定主题标识");
+		}
 		if (getTheme(themeid) != null) {
 			throw new EcmException("已存在主题：" + name);
 		}
@@ -41,7 +44,7 @@ public class ThemeBS implements IThemeBS {
 
 	@Override
 	public void removeTheme(String themeid) {
-		home.deleteDoc("themes", themeid);
+		home.deleteDocOne("themes", String.format("{'tuple.id':'%s'}",themeid));
 	}
 
 	@Override
@@ -71,6 +74,9 @@ public class ThemeBS implements IThemeBS {
 
 	@Override
 	public void addDisplay(String displayid, String themeid, String name, String desc) {
+		if(StringUtil.isEmpty(displayid)) {
+			throw new EcmException("未指定显示器标识");
+		}
 		if (getDisplay(themeid, displayid) != null) {
 			throw new EcmException("已存在显示器：" + displayid + "@" + themeid);
 		}
@@ -116,6 +122,9 @@ public class ThemeBS implements IThemeBS {
 
 	@Override
 	public void addStyle(String styleid, String themeid, String name) {
+		if(StringUtil.isEmpty(styleid)) {
+			throw new EcmException("未指定样式标识");
+		}
 		if (existsStyle(styleid, themeid)) {
 			throw new EcmException("样式已经存在：" + styleid + "@" + themeid);
 		}
@@ -158,8 +167,8 @@ public class ThemeBS implements IThemeBS {
 	public void setDefaultStyle(String styleid, String themeid) {
 		Bson filter = Document.parse(String.format("{'tuple.id':'%s'}", themeid));
 		Bson update = null;
-		if (StringUtil.isEmpty(styleid)) {
-			update = Document.parse(String.format("{$set:{'tuple.style':%s}}", styleid));
+		if (!StringUtil.isEmpty(styleid)) {
+			update = Document.parse(String.format("{$set:{'tuple.style':'%s'}}", styleid));
 		} else {
 			update = Document.parse(String.format("{$unset:{'tuple.style':''}}"));
 		}
@@ -182,7 +191,7 @@ public class ThemeBS implements IThemeBS {
 	@Override
 	public Style getStyle(String styleid, String themeid) {
 		String cjql = String.format(
-				"select {'tuple.id':1} from tuple styles %s where {'tuple.id':'%s','tuple.theme':'%s'}",
+				"select {'tuple':'*'} from tuple styles %s where {'tuple.id':'%s','tuple.theme':'%s'}",
 				Style.class.getName(), styleid, themeid);
 		IQuery<Style> q = home.createQuery(cjql);
 		IDocument<Style> doc = q.getSingleResult();
